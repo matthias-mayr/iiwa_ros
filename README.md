@@ -30,8 +30,8 @@ Dependencies
 
 ```sh
 cd /source/directory
-git clone https://github.com/epfl-lasa/kuka_fri.git
-cd kuka_fri
+git clone https://git.cs.lth.se/robotlab/kuka-fri.git
+cd kuka-fri
 ./waf configure
 ./waf
 sudo ./waf install
