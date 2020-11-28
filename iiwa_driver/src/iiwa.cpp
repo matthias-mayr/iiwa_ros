@@ -3,7 +3,7 @@
 //|    Authors:  Konstantinos Chatzilygeroudis (maintainer)
 //|              Bernardo Fichera
 //|              Walid Amanhoud
-//|    email:   konstantinos.chatzilygeroudis@epfl.ch
+//|    email:    costashatz@gmail.com
 //|             bernardo.fichera@epfl.ch
 //|             walid.amanhoud@epfl.ch
 //|    website: lasa.epfl.ch
@@ -54,6 +54,7 @@ namespace iiwa_ros {
         _nh = nh;
         _load_params(); // load parameters
         _init(); // initialize
+        _commanding_status_pub = _nh.advertise<std_msgs::Bool>("commanding_status", 100);
         _controller_manager.reset(new controller_manager::ControllerManager(this, _nh));
 
         if (_init_fri())
@@ -215,19 +216,28 @@ namespace iiwa_ros {
             _controller_manager->update(ros::Time::now(), elapsed_time);
             _write(elapsed_time);
 
-            // publish additional outputs
-            if (_additional_pub.trylock()) {
-                _additional_pub.msg_.header.stamp = ros::Time::now();
-                for (unsigned i = 0; i < _num_joints; i++) {
-                    _additional_pub.msg_.external_torques.data[i] = _robot_state.getExternalTorque()[i];
-                    _additional_pub.msg_.commanded_torques.data[i] = _robot_state.getCommandedTorque()[i];
-                    _additional_pub.msg_.commanded_positions.data[i] = _robot_state.getCommandedJointPosition()[i];
-                }
-                _additional_pub.unlockAndPublish();
-            }
-
+            _publish();
             rate.sleep();
         }
+    }
+
+    void Iiwa::_publish()
+    {
+		// publish commanding status
+        std_msgs::Bool msg;
+        msg.data = _commanding;
+        _commanding_status_pub.publish(msg);
+
+        // publish additional outputs
+        if (_additional_pub.trylock()) {
+            _additional_pub.msg_.header.stamp = ros::Time::now();
+            for (unsigned i = 0; i < _num_joints; i++) {
+                _additional_pub.msg_.external_torques.data[i] = _robot_state.getExternalTorque()[i];
+                _additional_pub.msg_.commanded_torques.data[i] = _robot_state.getCommandedTorque()[i];
+                _additional_pub.msg_.commanded_positions.data[i] = _robot_state.getCommandedJointPosition()[i];
+            }
+            _additional_pub.unlockAndPublish();
+		}
     }
 
     void Iiwa::_load_params()
@@ -238,7 +248,7 @@ namespace iiwa_ros {
         n_p.param<std::string>("fri/robot_ip", _remote_host, "192.170.10.2"); // Default robot ip is 192.170.10.2
         n_p.param<std::string>("fri/robot_description", _robot_description, "/robot_description");
 
-        n_p.param("hardware_interface/control_freq", _control_freq, 50.);
+        n_p.param("hardware_interface/control_freq", _control_freq, 200.);
         n_p.getParam("hardware_interface/joints", _joint_names);
     }
 
@@ -252,12 +262,17 @@ namespace iiwa_ros {
         case kuka::fri::MONITORING_WAIT:
         case kuka::fri::MONITORING_READY:
         case kuka::fri::COMMANDING_WAIT:
+            _idle = false;
+            _commanding = false;
+            break;
         case kuka::fri::COMMANDING_ACTIVE:
             _idle = false;
+            _commanding = true;
             break;
         case kuka::fri::IDLE: // if idle, do nothing
         default:
             _idle = true;
+            _commanding = false;
             return;
         }
 
@@ -301,6 +316,7 @@ namespace iiwa_ros {
     bool Iiwa::_init_fri()
     {
         _idle = true;
+        _commanding = false;
 
         // Create message/client data
         _fri_message_data = new kuka::fri::ClientData(_robot_state.NUMBER_OF_JOINTS);

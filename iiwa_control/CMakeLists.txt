@@ -3,10 +3,12 @@
 #|    Authors:  Konstantinos Chatzilygeroudis (maintainer)
 #|              Bernardo Fichera
 #|              Walid Amanhoud
-#|    email:   konstantinos.chatzilygeroudis@epfl.ch
-#|             bernardo.fichera@epfl.ch
-#|             walid.amanhoud@epfl.ch
-#|    website: lasa.epfl.ch
+#|    email:    costashatz@gmail.com
+#|              bernardo.fichera@epfl.ch
+#|              walid.amanhoud@epfl.ch
+#|    Other contributors:
+#|              Yoan Mollard (yoan@aubrune.eu)
+#|    website:  lasa.epfl.ch
 #|
 #|    This file is part of iiwa_ros.
 #|
@@ -53,7 +55,7 @@ find_package(Corrade REQUIRED Utility PluginManager)
 ##Needed for ros packages
 catkin_package(
   CATKIN_DEPENDS roscpp std_msgs hardware_interface controller_interface controller_manager urdf iiwa_tools
-  DEPENDS RobotControllers CorradeUtility CorradePluginManager
+  DEPENDS RobotControllers
   LIBRARIES CustomEffortController
 )
 
@@ -90,7 +92,7 @@ target_link_libraries(CustomEffortController PUBLIC
   ${Eigen3_LIBRARIES}
   Corrade::PluginManager)
 
-add_dependencies(CustomEffortController iiwa_service)
+add_dependencies(CustomEffortController ${iiwa_tools_EXPORTED_TARGETS})
 
 # Require C++11
 set_property(TARGET CustomEffortController PROPERTY CXX_STANDARD 11)

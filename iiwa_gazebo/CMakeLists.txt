@@ -3,10 +3,12 @@
 #|    Authors:  Konstantinos Chatzilygeroudis (maintainer)
 #|              Bernardo Fichera
 #|              Walid Amanhoud
-#|    email:   konstantinos.chatzilygeroudis@epfl.ch
-#|             bernardo.fichera@epfl.ch
-#|             walid.amanhoud@epfl.ch
-#|    website: lasa.epfl.ch
+#|    email:    costashatz@gmail.com
+#|              bernardo.fichera@epfl.ch
+#|              walid.amanhoud@epfl.ch
+#|    Other contributors:
+#|              Yoan Mollard (yoan@aubrune.eu)
+#|    website:  lasa.epfl.ch
 #|
 #|    This file is part of iiwa_ros.
 #|
@@ -51,7 +53,7 @@ set_property(TARGET iiwa_gazebo_gravity_compensation_hw_sim PROPERTY CXX_STANDAR
 target_include_directories(iiwa_gazebo_gravity_compensation_hw_sim PUBLIC include ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
 target_link_libraries(iiwa_gazebo_gravity_compensation_hw_sim PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-add_dependencies(iiwa_gazebo_gravity_compensation_hw_sim iiwa_service)
+add_dependencies(iiwa_gazebo_gravity_compensation_hw_sim ${iiwa_tools_EXPORTED_TARGETS})
 
 # Install
 install(TARGETS iiwa_gazebo_gravity_compensation_hw_sim
