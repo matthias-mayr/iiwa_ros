@@ -91,7 +91,7 @@ namespace iiwa_ros {
             if (!setCurrentThreadToHighestSchedulerPriority(error_message)) {
                 ROS_ERROR_STREAM(error_message);
             } else {
-                ROS_INFO_STREAM("Initializing without realtime scheduling support.");
+                ROS_INFO_STREAM("Initializing with realtime scheduling support.");
             }
         } else {
             ROS_INFO_STREAM("Initializing without realtime scheduling support.");
