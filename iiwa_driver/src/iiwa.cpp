@@ -81,7 +81,6 @@ namespace iiwa_ros {
         _nh = nh;
         _load_params(); // load parameters
         _init(); // initialize
-        _commanding_status_pub = _nh.advertise<std_msgs::Bool>("commanding_status", 100);
         _controller_manager.reset(new controller_manager::ControllerManager(this, _nh));
 
         if (hasRealtimeKernel()) {
@@ -223,6 +222,8 @@ namespace iiwa_ros {
         registerInterface(&_effort_joint_interface);
         registerInterface(&_velocity_joint_interface);
 
+        _commanding_status_pub.init(_nh, "commanding_status", 100);
+
         _additional_pub.init(_nh, "additional_outputs", 20);
         _additional_pub.msg_.external_torques.layout.dim.resize(1);
         _additional_pub.msg_.external_torques.layout.data_offset = 0;
@@ -262,9 +263,10 @@ namespace iiwa_ros {
     void Iiwa::_publish()
     {
 		// publish commanding status
-        std_msgs::Bool msg;
-        msg.data = _commanding;
-        _commanding_status_pub.publish(msg);
+        if (_commanding_status_pub.trylock()) {
+            _commanding_status_pub.msg_.data = _commanding;
+            _commanding_status_pub.unlockAndPublish();
+        }
 
         // publish additional outputs
         if (_additional_pub.trylock()) {
